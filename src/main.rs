@@ -1,4 +1,3 @@
-use std::sync::mpsc;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 
@@ -18,23 +17,18 @@ fn handle_connection(mut stream: TcpStream) {
 }
 
 fn main() {
-    let (tx, rx) = mpsc::channel();
-
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
-    
-    for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => {
-                // handle_connection(stream);
-                tx.send(stream).unwrap();
-            }
-            Err(e) => {
-                println!("error: {}", e);
+
+    loop {
+        for stream in listener.incoming() {
+            match stream {
+                Ok(stream) => {
+                    handle_connection(stream);
+                }
+                Err(e) => {
+                    println!("error: {}", e);
+                }
             }
         }
-    }
-
-    for received in rx {
-        handle_connection(received)
     }
 }
