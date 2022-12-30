@@ -1,5 +1,6 @@
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use std::thread;
 
 fn handle_connection(mut stream: TcpStream) {
     let mut buf = [0; 512];
@@ -19,15 +20,13 @@ fn handle_connection(mut stream: TcpStream) {
 fn main() {
     let listener = TcpListener::bind("127.0.0.1:6379").unwrap();
 
-    loop {
-        for stream in listener.incoming() {
-            match stream {
-                Ok(stream) => {
-                    handle_connection(stream);
-                }
-                Err(e) => {
-                    println!("error: {}", e);
-                }
+    for stream in listener.incoming() {
+        match stream {
+            Ok(stream) => {
+                thread::spawn(|| handle_connection(stream));
+            }
+            Err(e) => {
+                println!("error: {}", e);
             }
         }
     }
